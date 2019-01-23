@@ -236,7 +236,7 @@ void SCAMP_Operation::get_tile_ordering() {
   tile_ordering.clear();
   size_t num_tile_rows = ceil((size_B - m + 1) / static_cast<double>(tile_n_y));
   size_t num_tile_cols = ceil((size_A - m + 1) / static_cast<double>(tile_n_x));
-  std::cout << num_tile_rows << "  cols = " << num_tile_cols << std::endl;
+  //std::cout << num_tile_rows << "  cols = " << num_tile_cols << std::endl;
   if (self_join) {
     for (int offset = 0; offset < num_tile_rows - 1; ++offset) {
       for (int diag = 0; diag < num_tile_cols - 1 - offset; ++diag) {
@@ -307,9 +307,11 @@ bool SCAMP_Operation::pick_and_start_next_tile(
   // Get the size of the tile we will compute
   n_x[dev] = std::min(tile_size, size_A - pos_x[dev]);
   n_y[dev] = std::min(tile_size, size_B - pos_y[dev]);
+/*
   std::cout << "Starting tile with starting row of " << pos_y[dev]
             << " starting column of " << pos_y[dev] << " with height "
             << n_y[dev] << " and width " << n_x[dev] << std::endl;
+*/
   SCAMPError_t err;
   if (self_join) {
     if (tile_row == tile_col) {
@@ -481,8 +483,10 @@ int SCAMP_Operation::issue_and_merge_tiles_on_devices(
     }
     completed_tiles++;
   }
+/*
   std::cout << completed_tiles / static_cast<float>(total_tiles) * 100
             << " percent complete." << std::endl;
+*/
   return last_dev;
 }
 
@@ -523,8 +527,10 @@ SCAMPError_t SCAMP_Operation::do_join(
   bool done = false;
   int last_dev = ISSUED_ALL_DEVICES;
   get_tile_ordering();
+/*
   std::cout << "Performing join with " << tile_ordering.size() << " tiles."
             << std::endl;
+*/
   for (int i = 0; i < devices.size(); ++i) {
     int device = devices.at(i);
     cudaSetDevice(device);
@@ -555,6 +561,9 @@ void do_SCAMP(SCAMPArgs *args, const std::vector<int> &devices) {
   // Allocate and initialize memory
   clock_t start, end;
   OptionalArgs opt_args(args->distance_threshold());
+/*
+  std::cout << args->timeseries_a().size() << " " << args->timeseries_b().size() << " " << args->window()  << " " << args->max_tile_size() <<std::endl;
+*/
   SCAMP_Operation op(
       args->timeseries_a().size(), args->timeseries_b().size(), args->window(),
       args->max_tile_size(), devices, !args->has_b(), args->precision_type(),

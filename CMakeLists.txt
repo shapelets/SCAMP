@@ -33,6 +33,9 @@ else()
 endif()
 
 add_subdirectory(proto)
+FIND_PACKAGE(PythonInterp)
+FIND_PACKAGE(PythonLibs)
+FIND_PACKAGE(Boost COMPONENTS python)
 
 set(
   PROJECT_SOURCE_FILES
@@ -62,7 +65,7 @@ set(CXX_STD, "-std=c++11")
 message(STATUS "CUDA Root Directory is ${CUDA_TOOLKIT_ROOT_DIR}")
 include_directories("${CUDA_TOOLKIT_ROOT_DIR}/include" "proto")
 set(CUDA_SEPARABLE_COMPILATION ON)
-set(CUDA_COMPILATION_FLAGS "--std=c++14 -lineinfo --expt-relaxed-constexpr -use_fast_math -O3")
+set(CUDA_COMPILATION_FLAGS "-Xcompiler -fPIC --std=c++14 -lineinfo --expt-relaxed-constexpr -use_fast_math -O3")
 set(CUDA_GENCODE_FLAGS "${CUDA_GENCODE_FLAGS} -gencode arch=compute_60,code=sm_70")
 set(CUDA_GENCODE_FLAGS "${CUDA_GENCODE_FLAGS} -gencode arch=compute_61,code=sm_61")
 set(CUDA_GENCODE_FLAGS "${CUDA_GENCODE_FLAGS} -gencode arch=compute_60,code=sm_60")
@@ -71,7 +74,7 @@ set(CUDA_GENCODE_FLAGS "${CUDA_GENCODE_FLAGS} -gencode arch=compute_37,code=sm_3
 set(CUDA_GENCODE_FLAGS "${CUDA_GENCODE_FLAGS} -gencode arch=compute_35,code=sm_35")
 set(CUDA_GENCODE_FLAGS "${CUDA_GENCODE_FLAGS} -gencode arch=compute_30,code=sm_30")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_STD}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_STD} -fPIC")
 
 # optimize in release
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
@@ -106,6 +109,17 @@ target_link_libraries(tile messages common kernels fft)
 add_library(scamp src/SCAMP.cpp)
 target_link_libraries(scamp messages utils tile common fft)
 
+
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
+PYTHON_ADD_MODULE(pyscamp src/PiecewiseSCAMP)
+FILE(COPY MyProject.py DESTINATION .) # See the whole tutorial to understand this line
+target_link_libraries(pyscamp scamp python2.7 boost_python)
+
+set_target_properties(fft_kernels PROPERTIES
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
+    COMPILE_FLAGS "${CUDA_COMPILATION_FLAGS} ${CUDA_GENCODE_FLAGS}"
+)
 
 set_target_properties(kernels PROPERTIES
     CXX_STANDARD 14
