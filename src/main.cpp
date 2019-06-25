@@ -190,7 +190,7 @@ bool WriteProfileToFile(const std::string &mp, const std::string &mpi,
     case SCAMP::PROFILE_TYPE_1NN_INDEX: {
       std::ofstream mp_out(mp);
       std::ofstream mpi_out(mpi);
-      auto arr = p.data[0].uint64_value;
+      auto arr = p.data.uint64_value;
       for (int i = 0; i < arr.size(); ++i) {
         SCAMP::mp_entry e;
         e.ulong = arr[i];
@@ -213,7 +213,7 @@ bool WriteProfileToFile(const std::string &mp, const std::string &mpi,
     }
     case SCAMP::PROFILE_TYPE_1NN: {
       std::ofstream mp_out(mp);
-      auto arr = p.data[0].float_value;
+      auto arr = p.data.float_value;
       for (int i = 0; i < arr.size(); ++i) {
         if (FLAGS_output_pearson) {
           mp_out << std::setprecision(10) << arr[i] << std::endl;
@@ -226,7 +226,7 @@ bool WriteProfileToFile(const std::string &mp, const std::string &mpi,
     }
     case SCAMP::PROFILE_TYPE_SUM_THRESH: {
       std::ofstream mp_out(mp);
-      auto arr = p.data[0].double_value;
+      auto arr = p.data.double_value;
       for (int i = 0; i < arr.size(); ++i) {
         mp_out << std::setprecision(10) << arr[i] << std::endl;
       }
@@ -244,34 +244,28 @@ void InitProfileMemory(SCAMP::SCAMPArgs *args) {
       SCAMP::mp_entry e;
       e.floats[0] = std::numeric_limits<float>::lowest();
       e.ints[1] = -1u;
-      args->profile_a.data.emplace_back();
-      args->profile_a.data[0].uint64_value.resize(
+      args->profile_a.data.uint64_value.resize(
           args->timeseries_a.size() - FLAGS_window + 1, e.ulong);
       if (FLAGS_keep_rows) {
-        args->profile_b.data.emplace_back();
-        args->profile_b.data[0].uint64_value.resize(
+        args->profile_b.data.uint64_value.resize(
             args->timeseries_b.size() - FLAGS_window + 1, e.ulong);
       }
     }
     case SCAMP::PROFILE_TYPE_1NN: {
-      args->profile_a.data.emplace_back();
-      args->profile_a.data[0].float_value.resize(
+      args->profile_a.data.float_value.resize(
           args->timeseries_a.size() - FLAGS_window + 1,
           std::numeric_limits<float>::lowest());
       if (FLAGS_keep_rows) {
-        args->profile_b.data.emplace_back();
-        args->profile_b.data[0].float_value.resize(
+        args->profile_b.data.float_value.resize(
             args->timeseries_b.size() - FLAGS_window + 1,
             std::numeric_limits<float>::lowest());
       }
     }
     case SCAMP::PROFILE_TYPE_SUM_THRESH: {
-      args->profile_a.data.emplace_back();
-      args->profile_a.data[0].double_value.resize(
+      args->profile_a.data.double_value.resize(
           args->timeseries_a.size() - FLAGS_window + 1, 0);
       if (FLAGS_keep_rows) {
-        args->profile_b.data.emplace_back();
-        args->profile_b.data[0].double_value.resize(
+        args->profile_b.data.double_value.resize(
             args->timeseries_b.size() - FLAGS_window + 1, 0);
       }
     }
@@ -380,6 +374,7 @@ int main(int argc, char **argv) {
   args.profile_b.type = profile_type;
   args.precision_type = t;
   args.profile_type = profile_type;
+  args.reduction_type = SCAMP::Reduction::FULL;
   args.keep_rows_separate = FLAGS_keep_rows;
   args.is_aligned = FLAGS_aligned;
   args.timeseries_a = std::move(Ta_h);
