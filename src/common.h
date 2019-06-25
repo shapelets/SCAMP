@@ -29,6 +29,8 @@ enum SCAMPProfileType {
   PROFILE_TYPE_1NN = 6,
 };
 
+enum class Reduction { FULL, LEFT_RIGHT, LEFT, RIGHT };
+
 // Precision modes
 enum SCAMPPrecisionType {
   PRECISION_INVALID = 0,
@@ -56,7 +58,7 @@ struct ProfileData {
 
 // Stores information about a matrix profile
 struct Profile {
-  std::vector<ProfileData> data;
+  ProfileData data;
   SCAMPProfileType type;
 };
 
@@ -77,6 +79,7 @@ struct SCAMPArgs {
   double distance_threshold;
   SCAMPPrecisionType precision_type;
   SCAMPProfileType profile_type;
+  Reduction reduction_type;
   bool computing_rows;
   bool computing_columns;
   bool keep_rows_separate;
@@ -101,8 +104,8 @@ struct OpInfo {
   OpInfo(size_t Asize, size_t Bsize, size_t window_sz, size_t max_tile_size,
          bool selfjoin, SCAMPPrecisionType t, int64_t start_row,
          int64_t start_col, OptionalArgs args_, SCAMPProfileType profiletype,
-         bool keep_rows, bool compute_rows, bool compute_cols, bool aligned,
-         bool silent_mode, int num_workers)
+         Reduction reductiontype, bool keep_rows, bool compute_rows,
+         bool compute_cols, bool aligned, bool silent_mode, int num_workers)
       : full_ts_len_A(Asize),
         full_ts_len_B(Bsize),
         mp_window(window_sz),
@@ -112,6 +115,7 @@ struct OpInfo {
         global_start_col_position(start_col),
         opt_args(args_),
         profile_type(profiletype),
+        reduction_type(reductiontype),
         keep_rows_separate(keep_rows),
         computing_rows(compute_rows),
         computing_cols(compute_cols),
@@ -130,6 +134,7 @@ struct OpInfo {
 
   // Type of profile to compute
   SCAMPProfileType profile_type;
+  Reduction reduction_type;
 
   // Total size of A timeseries
   size_t full_ts_len_A;

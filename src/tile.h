@@ -64,7 +64,8 @@ class Tile {
                          uint64_t length);
   void MergeTileIntoFullProfile(Profile *tile_profile, uint64_t position,
                                 uint64_t length, Profile *full_profile,
-                                uint64_t index_start, std::mutex &lock);
+                                uint64_t index_start, std::mutex &lock,
+                                Reduction reduction = Reduction::FULL);
 
  public:
   Tile(const OpInfo *info, SCAMPArchitecture arch, int cuda_id);
