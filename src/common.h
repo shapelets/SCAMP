@@ -124,10 +124,15 @@ struct OpInfo {
     if (self_join) {
       full_ts_len_B = full_ts_len_A;
     }
-    max_tile_ts_size = std::max(Asize, Bsize) / (num_workers);
+    auto maxSize = std::max(Asize, Bsize);
+    max_tile_ts_size = maxSize / (num_workers);
+
     if (max_tile_ts_size > max_tile_size) {
       max_tile_ts_size = max_tile_size;
+    } else if (max_tile_ts_size < 1) {
+      max_tile_ts_size = maxSize;
     }
+
     max_tile_width = max_tile_ts_size - mp_window + 1;
     max_tile_height = max_tile_width;
   }
@@ -280,7 +285,7 @@ enum SCAMPTileType {
 }  // namespace SCAMP
 
 #ifdef _HAS_CUDA_
-void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true);
+void gpuAssert(cudaError_t code, const char *file, int line);
 #define gpuErrchk(ans) \
   { gpuAssert((ans), __FILE__, __LINE__); }
 #endif
