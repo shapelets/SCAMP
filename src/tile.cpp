@@ -15,6 +15,21 @@ void elementwise_sum(T *mp_full, uint64_t merge_start, uint64_t tile_sz,
   }
 }
 
+bool comparison_full(float valuePrev, float valueCurr, int /*globalIndex*/,
+                     int /*indexToUpdate*/) {
+  return valuePrev < valueCurr;
+}
+
+bool comparison_right(float valuePrev, float valueCurr, int globalIndex,
+                      int indexToUpdate) {
+  return valuePrev < valueCurr && globalIndex < indexToUpdate;
+}
+
+bool comparison_left(float valuePrev, float valueCurr, int globalIndex,
+                     int indexToUpdate) {
+  return valuePrev < valueCurr && globalIndex > indexToUpdate;
+}
+
 template <typename T>
 void elementwise_max(T *mp_full, uint64_t merge_start, uint64_t tile_sz,
                      T *to_merge, uint64_t index_offset,
