@@ -82,6 +82,9 @@ DEFINE_string(gpus, "",
               "IDs of GPUs on the system to use, if this flag is not set SCAMP "
               "tries to use all available GPUs on the system");
 
+DEFINE_bool(lr, false,
+              "LeftRightMP");
+
 std::ifstream &read_value(std::ifstream &s, double &d, int count) {
   std::string line;
   double parsed;
@@ -250,6 +253,10 @@ void InitProfileMemory(SCAMP::SCAMPArgs *args) {
         args->profile_b.data.uint64_value.resize(
             args->timeseries_b.size() - FLAGS_window + 1, e.ulong);
       }
+	  if(args->reduction_type == SCAMP::Reduction::LEFT_RIGHT) {
+        args->profile_b.data.uint64_value.resize(
+            args->timeseries_a.size() - FLAGS_window + 1, e.ulong); 
+	  }
     }
     case SCAMP::PROFILE_TYPE_1NN: {
       args->profile_a.data.float_value.resize(
@@ -260,6 +267,11 @@ void InitProfileMemory(SCAMP::SCAMPArgs *args) {
             args->timeseries_b.size() - FLAGS_window + 1,
             std::numeric_limits<float>::lowest());
       }
+	  if(args->reduction_type == SCAMP::Reduction::LEFT_RIGHT) {
+        args->profile_b.data.float_value.resize(
+            args->timeseries_a.size() - FLAGS_window + 1,
+            std::numeric_limits<float>::lowest());
+	  }
     }
     case SCAMP::PROFILE_TYPE_SUM_THRESH: {
       args->profile_a.data.double_value.resize(
@@ -268,6 +280,10 @@ void InitProfileMemory(SCAMP::SCAMPArgs *args) {
         args->profile_b.data.double_value.resize(
             args->timeseries_b.size() - FLAGS_window + 1, 0);
       }
+	  if(args->reduction_type == SCAMP::Reduction::LEFT_RIGHT) {
+        args->profile_b.data.double_value.resize(
+            args->timeseries_a.size() - FLAGS_window + 1, 0);
+	  }
     }
     default:
       break;
@@ -374,7 +390,7 @@ int main(int argc, char **argv) {
   args.profile_b.type = profile_type;
   args.precision_type = t;
   args.profile_type = profile_type;
-  args.reduction_type = SCAMP::Reduction::FULL;
+  args.reduction_type = FLAGS_lr ? SCAMP::Reduction::LEFT_RIGHT : SCAMP::Reduction::FULL;
   args.keep_rows_separate = FLAGS_keep_rows;
   args.is_aligned = FLAGS_aligned;
   args.timeseries_a = std::move(Ta_h);
@@ -394,7 +410,7 @@ int main(int argc, char **argv) {
   printf("Now writing result to files\n");
   WriteProfileToFile(FLAGS_output_a_file_name, FLAGS_output_a_index_file_name,
                      args.profile_a);
-  if (FLAGS_keep_rows) {
+  if (FLAGS_keep_rows || args.reduction_type == SCAMP::Reduction::LEFT_RIGHT) {
     WriteProfileToFile(FLAGS_output_b_file_name, FLAGS_output_b_index_file_name,
                        args.profile_b);
   }
