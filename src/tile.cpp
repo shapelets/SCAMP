@@ -55,6 +55,7 @@ void elementwise_max(T *mp_full, uint64_t merge_start, uint64_t tile_sz,
         break;
       default:
         update = false;
+        update = presentValue < updateValue;
     }
     if (update) {
       e2.ints[1] += index_offset;
@@ -374,7 +375,8 @@ SCAMPError_t Tile::InitProfile(Profile *profile_a, Profile *profile_b) {
       if (_info->self_join) {
         Memcopy(_profile_b_tile_dev.at(type), pA_ptr + _current_tile_row,
                 sizeof(uint64_t) * height, false);
-      } else if (_info->computing_rows && _info->keep_rows_separate) {
+      } else if ((_info->computing_rows && _info->keep_rows_separate) ||
+		  _info->reduction_type == Reduction::LEFT_RIGHT) {
         const uint64_t *pB_ptr = profile_b->data.uint64_value.data();
         Memcopy(_profile_b_tile_dev.at(type), pB_ptr + _current_tile_row,
                 sizeof(uint64_t) * height, false);

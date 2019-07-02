@@ -157,7 +157,7 @@ void SCAMP_Operation::do_work(const std::vector<double> &timeseries_a,
 // using the configuration set up in SCAMP_Operation's constructor
 SCAMPError_t SCAMP_Operation::do_join(const std::vector<double> &timeseries_a,
                                       const std::vector<double> &timeseries_b) {
-  const int num_workers = _cpu_workers + _devices.size();
+  int num_workers = _cpu_workers + _devices.size();
   if (!_info.silent_mode) {
     printf("Num workers = %d\n", num_workers);
   }
@@ -187,6 +187,7 @@ SCAMPError_t SCAMP_Operation::do_join(const std::vector<double> &timeseries_a,
     std::cout << "Performing join with " << _work_queue.size() << " tiles."
               << std::endl;
   }
+  num_workers = 1;
   std::vector<std::future<void>> futures(num_workers);
 
   // Start CUDA Workers
