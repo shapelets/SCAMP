@@ -3,33 +3,6 @@
 namespace SCAMP {
 
 template <typename T>
-SCAMPKernelInputArgs<T>::SCAMPKernelInputArgs(Tile *t, bool transpose,
-                                              bool ab_join) {
-  cov = t->QT();
-  dfa = transpose ? t->dfb() : t->dfa();
-  dfb = transpose ? t->dfa() : t->dfb();
-  dga = transpose ? t->dgb() : t->dga();
-  dgb = transpose ? t->dga() : t->dgb();
-  normsa = transpose ? t->normsb() : t->normsa();
-  normsb = transpose ? t->normsa() : t->normsb();
-  n_x = transpose ? t->get_tile_height() : t->get_tile_width();
-  n_y = transpose ? t->get_tile_width() : t->get_tile_height();
-  n_x = n_x - t->info()->mp_window + 1;
-  n_y = n_y - t->info()->mp_window + 1;
-  std::pair<int, int> exclusion =
-      ab_join ? t->get_exclusion_for_ab_join(!transpose)
-              : t->get_exclusion_for_self_join(!transpose);
-  exclusion_lower = exclusion.first;
-  exclusion_upper = exclusion.second;
-  opt = t->info()->opt_args;
-  profile_a_length =
-      transpose ? t->get_mutable_b_dev_length() : t->get_mutable_a_dev_length();
-  profile_b_length =
-      transpose ? t->get_mutable_a_dev_length() : t->get_mutable_b_dev_length();
-  max_matches_per_tile = t->info()->max_matches_per_tile;
-}
-
-template <typename T>
 void SCAMPKernelInputArgs<T>::Print() {
   std::cout << "cov = " << cov << std::endl;
   std::cout << "dfa = " << dfa << std::endl;
